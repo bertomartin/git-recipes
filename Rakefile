@@ -66,8 +66,11 @@ module Epub
         end
 
         xml.manifest do
-          xml.item 'media-type' => 'application/x-dtbncx+xml', 'href' => 'toc.ncx', 'id' => 'ncx'
-          xml.item 'media-type' => 'text/css', 'href' => 'styles.css', 'id' => 'css'
+          xml.item 'id' => 'ncx', 'href' => 'toc.ncx', 'media-type' => 'application/x-dtbncx+xml'
+          xml.item 'id' => 'css', 'href' => 'styles.css', 'media-type' => 'text/css'
+          @book.images.each do |image|
+            xml.item 'id' => File.basename(image, '.svg'), 'href' => image.sub(/^content\//, ''), 'media-type' => 'image/svg+xml'
+          end
           @book.chapters.each do |chapter|
             xml.item 'id' => chapter.id, 'href' => chapter.target, 'media-type' => 'application/xhtml+xml'
           end
@@ -203,7 +206,7 @@ module Epub
     
     def images
       @images ||= begin
-        source.scan(/!\[([^\]]*)\]\(([^)]+)\)/).map { |m| m[2] }.uniq
+        @content.scan(/!\[([^\]]*)\]\(([^)]+)\)/).map { |m| File.join('content', m[1]) }.uniq
       end
     end
   end
@@ -221,8 +224,8 @@ def find_md(filename)
   INPUT_FILES.find { |s| File.basename(s, 'md') == File.basename(filename, 'xhtml')  }
 end
 
-def find_png(filename)
-  INPUT_FILES.find(filename)
+def find_input_file(filename)
+  INPUT_FILES.find { |s| s.sub(/^content/, 'book/OEBPS').to_s == filename.to_s }
 end
 
 def kramdown(str)
@@ -260,23 +263,23 @@ rule '.xhtml' => lambda { |file| find_md(file) } do |t|
   end
 end
 
-rule '.png' => lambda { |file| find_png(file) } do |t|
-  Rake::Task['book/OEBPS'].invoke
-  cp t.source t.name 
+rule /^book\/OEBPS\/images\/.*\.svg/ => lambda { |file| find_input_file(file) } do |t|
+  Rake::Task['book/OEBPS/images'].invoke
+  cp t.source, t.name 
 end
-
 
 ## Directories ###########################################################
 
 directory 'book'
 directory 'book/OEBPS'
+directory 'book/OEBPS/images'
 directory 'book/META-INF'
 
 ## Files ################################################################
 
 file 'preview.html' => INPUT_FILES do |t|
   File.open(t.name, 'w') do |f|
-    f.write kramdown(t.prerequisites.sort.map { |f| File.read(f) }.join("\n\n"))
+    f.write kramdown(t.prerequisites.sort.select { |f| File.extname(f) == '.md' }.map { |f| File.read(f) }.join("\n\n")).gsub(/src="images/, 'src="content/images')
   end
 end
 

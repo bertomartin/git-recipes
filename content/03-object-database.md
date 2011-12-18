@@ -213,7 +213,7 @@ What has happened here? We have made three important observations:
 
 Schematically, we can draw the relations in the Git object database like this:
 
-![Schema of the contents of our Git object database](content/git-object-model.svg)
+![Schema of the contents of our Git object database](images/git-object-model.svg)
 
 In summary, the history of our project consists of a series of linked commit objects, each representing a snapshot of the contents of the project. A commit object has a tree object to list its files and directories by pointing at other tree and blob objects. A blob object is a file's contents. A tag object is simply a pointer at an existing commit object.
 

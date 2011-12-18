@@ -133,7 +133,7 @@ One might wonder why Git would not simply record a commit object in the `HEAD` f
 
 Schematically, we may draw Git's branching model as follows:
 
-![Git branches point at specific commits in a chain of commits, while HEAD points at the current branch](content/git-branches.svg)
+![Git branches point at specific commits in a chain of commits, while HEAD points at the current branch](images/git-branches.svg)
 
 In summary, we have made the following observations:
 
