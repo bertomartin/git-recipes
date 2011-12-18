@@ -52,3 +52,11 @@ pre, code, kbd, var, tt, .codeRay, .code {
 .footnotes pre, .footnotes code, .footnotes kbd, .footnotes var, .footnotes tt, .footnotes .codeRay, .footnotes .code {
     color: #888;
 }
+
+dt {
+    font-style: italic;
+}
+
+dd {
+    margin: 0 0 0 1.4em;
+}
