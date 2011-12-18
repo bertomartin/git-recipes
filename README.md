@@ -6,7 +6,9 @@ This is the complete source for my simple recipe book on Git. It includes all co
 
 ## Summary
 
-Git is a popular version control system, that has many tricks up its sleeve. This will be a simple book about the workings of Git, and how to use it in your daily workflow. It is aimed at intermediate and advanced Git users, who know how to branch, commit, push and pull. It shall contain a mix of simple to follow recipes and background infomration.
+Git is a popular version control system, that has many tricks up its sleeve. This will be a simple book about the workings of Git, and how to use it in your daily workflow. It is aimed at intermediate and advanced Git users, who know how to branch, commit, push and pull. It shall contain a mix of simple to follow recipes and background information.
+
+**The best way to get a preview of a book is to clone the repo and run `rake preview.html` to generate a one-page HTML version of all the content.**
 
 ## Contributing
 
