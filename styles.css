@@ -42,6 +42,10 @@ abbr {
     padding: 0 0 0 2.2em;
 }
 
+pre {
+    margin-left: 2em;
+}
+
 pre, code, kbd, var, tt, .codeRay, .code {
     font-family: Menlo, monospace;
     font-size: 86.5%;
