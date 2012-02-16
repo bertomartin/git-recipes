@@ -135,6 +135,16 @@ Schematically, we may draw Git's branching model as follows:
 
 ![Git branches point at specific commits in a chain of commits, while HEAD points at the current branch](images/git-branches.svg)
 
+## Working with remote branches
+
+Part of the nature of a distributed version control system like Git is communicating with other repositories. Without delving too much into workflows concerning remote repositories, usually a team of developers will use some kind of central repository as _canonical_ repository, while each developer individually has a clone of that repository on his local machine for development. At some stage, developers will push new code from their local repositories to the remote, central repository; other developers will then pull those changes back into their local clones.
+
+Users unfamiliar with Git often wonder how this can possibly work without generating heaps of merge conflicts. We have implicitly dealt with this issue already, but it bears some elaboration.
+
+First of all, Git is concerned with chains of commits, which tell Git how to manifest a collection of files and directories on disk. Different chains are named as branches. Every change _adds to_ the repository with new tree and commit objects, which are dependent on earlier tree and commit objects.
+
+When you add a remote repository in Git, you simply tell Git another location to look for branches. You can then use those branches like you would your local branches. Usually, you would set up mirroring branches
+
 In summary, we have made the following observations:
 
 1. Branches are simple pointers at existing commits. In Git, every commits belongs to a branch.
