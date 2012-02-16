@@ -2,33 +2,38 @@
 
 ## Example application: waterbug, a simple URL shortener
 
-The example application we will be writing for illustration purposes is a simple URL shortener written in Ruby. It will be a web application not inlike bit.ly, j.mp or t.co, but much simpler. I have decided to write it using the Sinatra web framework, and I have come up with the following application in `app.rb`:
+To illustrate how Git stores its information internally, we will be building a very (_very_) simple URL web application. We will use Ruby to write our very own URL shortener, not unlike popular services like bit.ly, j.mp and t.co. The premise is simple: the user visits a short URL containing a unique key that maps to a longer URL somewhere else on the web. Our application will look up that key and redirect the user.
+
+I have decided to write it using the [Sinatra web framework][sinatra], and I have come up with the following application in `app.rb`:
 
     require 'sinatra'
     
     get '/:shorturl' do
-      Store.fetch(params[:shorturl])
+      redirect Store.fetch(params[:shorturl])
     end
 {: lang="ruby" }
 
-I need to have some kind of store to map a short URL to long URL. After pondering this dilemma for a while, I have up with the following solution:
+I respond to any GET request and capture the path into a `shorturl` parameter. We can then ask a `Store` object to give us a value corresponding to our `shorturl` key.
 
-    # in lib/store.rb
+I need to have some kind of store object to map a short URL to a long URL. After pondering this dilemma for a while, I have come up with the following solution in a new file `lib/store.rb`:
+
     Store = [
       'http://arjanvandergaag.nl',
       'http://ruby-lang.org'
     ]
+{: lang="ruby }
 
-    # in app.rb
+Then, we force our application to use numeric keys by converting our incoming key, which is a string, into an integer:
+
     require 'sinatra'
-    require 'lib'
+    require 'store'
 
     get '/:shorturl' do
-      Store.fetch(params[:shorturl].to_i)
+      redirect Store.fetch(params[:shorturl].to_i)
     end
 {: lang="ruby" }
 
-My `Store` object can be just a nativ Ruby `Array` object, since it responds to the `fetch` message and returns a value for a key. Works great, isn't it? One might think of several downsides to using numeric keys, as well as to using an in-memory array as data store, but I think we can all agree on the benefits of taking baby steps.
+My `Store` object can be just a nativ Ruby `Array` object, since it responds to the `fetch` message and returns a value for a key. Works great, doesn't it? One might think of several downsides to using numeric keys, as well as to using an in-memory array as data store, but I think we can all agree on the benefits of taking baby steps.
 
 Our application is fully functional, and we can test it by first making sure we have the `sinatra` gem installed on our system, and the running our app:
 
@@ -37,7 +42,7 @@ Our application is fully functional, and we can test it by first making sure we 
     1 gem installed
     $ ruby -rubygems -Ilib app.rb
 
-This will launch a web server. Open a browser and go to `http://localhost:4567/0` and you will be redirected to `http://arjanvandergaag.nl`. Awesome.
+Note how we use command-line arguments to the `ruby` program to require Rubygems before running our file, and adding the `lib` directory to the load path, so `require 'store'` will actually find our `./lib/store.rb` file. If all went well, a web server should be launched, serving our application. Open a browser and go to `http://localhost:4567/0` and you will be redirected to `http://arjanvandergaag.nl`. Sweet!
 
 Satisfied with our work, we can now commit our work to the repository. Let's initialize a new repository:
 
@@ -51,10 +56,10 @@ We have first initialized a new Git repository, committed all the files in our c
 
 ## Peeking inside the Git object database
 
-In order to get to grips with what Git does and how it does it, we'll start by inspecting the Git object database. The repository database is located at `GIT_DIR/.git/objects/`. When we look inside the `.git/objects` directory for a new Git repository, it's mostly empty:
+In order to get to grips with what Git does and how it does it, we'll start by inspecting the Git object database. The repository database is located at `./.git/objects/`. When we look inside the `.git/objects` directory for a brand new Git repository, it's mostly empty:
 
-    ~/waterbug $ ls .git/objects
-    pack info
+    ~/new-repo $ ls .git/objects
+    pack  info
 
 The only contents of `.git/objects` are the currently empty `pack` and `info` directories. Let's look at the `.git/objects` directory for our waterbug application, this time using the `tree` command:[^1]
 
@@ -101,7 +106,9 @@ Git informs us we are dealing with a `blob` object. A blob is simply a piece of 
       redirect Store.fetch(params[:id].to_i)
     end
 
-It's exactly the contents of our `app.rb` file. So a blob is simple the contents of a file, identified by a SHA1 hash of its contents. Let's go to the next file:
+It's exactly the contents of our `app.rb` file. So a blob is simply the contents of a file, identified by a SHA1 hash of its contents.
+
+Let's go to the next file:
 
     ~/waterbug $ git cat-file -t 48dd33fbe5b424477f4b44ca98f58aff7b4f727c
     tree
@@ -112,14 +119,14 @@ The second object is a `tree` type. The purpose of a tree is best demonstrated w
    100644 blob 4cbff340eb407e09e3b94b7a4de88e30546d3b1f app.rb
    040000 tree a8320d12018d3834d5c1ff9f7cf27b577b518855 lib
 
-A tree contains a list of references to other objects; both SHA1 hashes are present in the list of objects we saw earlier. In addition to the hashes, a tree file also lists the original file attributes, object types and original filename. Note how this tree object refers to another tree object for our `lib` directory. That object will contain a single entry for our `store.rb` file. So, a tree object maps blobs and other trees to files and directories in a working copy.
+A tree contains a list of references to other objects; both SHA1 hashes are present in the list of objects we saw listed earlier. In addition to the hashes, a tree file also lists the original file attributes, object types and original filename. Note how this tree object refers to another tree object for our `lib` directory. That object will contain a single entry for our `store.rb` file. So, a tree object maps blobs and other trees to files and directories in a working copy. Or, to rephrase, it maps Git objects to filesystem objects.
 
 Let's move on to the next object in our database:
 
     ~/waterbug $ git cat-file -t 09bca756d335370122589e443ec7056f5de731153
     commit
 
-It is a commit object, and its contents will not surprise you:
+It is a commit object, and its contents will not surprise you, as you will likely have seen something similar in the output of a `git log` command:
 
     ~/waterbug $ git cat-file -p 09bca756d335370122589e443ec7056f5de73115
     tree 48dd33fbe5b424477f4b44ca98f58aff7b4f727c
@@ -128,9 +135,9 @@ It is a commit object, and its contents will not surprise you:
 
     Initial commit
 
-There are several different things going on here. First, the commit object refers to a tree object: the one we saw earlier for the root directory of our project. It then lists commit author, email and date. Finally, it includes the commit message we supplied when creating the commit.
+There are several different things going on here. First, the commit object refers to a tree object: the one we saw earlier for the root directory of our project. It then lists commit author, email and date. Finally, it includes the entire commit message we supplied when creating the commit.
 
-A commit object can be seen as a snapshot of the project on a particular point in time. The contents of that snapshot is defined by the root tree the commit refers to.
+A commit object can be seen as a snapshot of the project on a particular point in time. The contents of that snapshot is defined by the root tree the commit refers to. That tree will in turn know about blobs and other trees, so we can completely re-create a working copy from a single commit.
 
 There is one object left in our database, so let's inspect it:
 
@@ -211,6 +218,8 @@ What has happened here? We have made three important observations:
 2. When a file is changed, a new blob object is added to the database. This new blob is referred to in a new tree object, and the new tree object itself is referred to in a new root tree object. The original blob object remains unchanged.
 3. The file that did not change is listed again in the new tree object --- it does not get a new blob object.
 
+It may be worth pausing to discuss why a new tree object is created when one of the files it refers to is changed. We have seen how a change in a file leads to the creation of a new blob object. That blob object is uniquely identified by its hash. So in order to list a new file, a tree object needs to refer to a new hash. That would cause its textual contents to change. Hence, its own hash changes. So, we can never actually _change_ objects in the Git object database, since every change triggers the creation of a new object. We can only _add to_ the database.
+
 Schematically, we can draw the relations in the Git object database like this:
 
 ![Schema of the contents of our Git object database](images/git-object-model.svg)
@@ -224,3 +233,5 @@ We now understand enough of the basics of the Git object database to move on to 
 [^2]: Git calculates an object's hash by passing the result of concatenating the file type (e.g. `blob`, `tree`, `tag` or `commit`), a space, the file size, a null byte and then the entire file's contents through the SHA1 algorhithm.
 
 *[URL]: Uniform Resource Locator
+
+[sinatra]: http://sinatrarb.com
