@@ -4,7 +4,9 @@ Cheap branching is one of the main selling points of Git. Non-trivial use of bra
 
 ## What makes branching cheap?
 
-Knowing how Git chains commits together to form a history of your project, it is not hard to see how branches work. A commit object refers to a parent commit, which returns to its parent, and so forth until you reach the first commit in the project. But a single commit can obviously be referred to as a parent by two different commits, as in the following example:
+Now we know how Git chains commits together to form a history of a project, it is not hard to see how branches work. A commit object refers to a parent commit, which refers to its parent, and so forth until you reach a commit without parent --- usually the first commit in the project. That gives us a nice and clean line of history.
+
+But a single commit can obviously be referred to as a parent by two different commits, as in the following example:
 
     * 0985000 - (HEAD, docs) Added README
     | * 8f27176 - (master) Added URL to rubyonrails.org
@@ -15,7 +17,7 @@ Here, I have added a new commit to our waterbug URL shortener application. Both 
 
 The new branch I have created for my documentation efforts is called `docs` while the main branch is called `master`. These names are mentioned in the log output listed above.
 
-When we go looking at how this information is stored, our first guess might be to start browsing `.git/objects`. The only things you would find there are the new commit, tree and blob objects we created by comitting new changes to the repository. All information regarding branches are not first-class citizens in the Git object database; instead, they reside in `.git/refs`. Let's look inside this directory, again using the `tree` command:
+When we go looking at how this information is stored, our first guess might be to start browsing `.git/objects`. The only things you would find there are the new commit, tree and blob objects we created by comitting new changes to the repository. Branches are not first-class citizens in the Git object database; instead, they reside in `.git/refs`. Let's look inside this directory, again using the `tree` command:
 
     $ tree .git/refs
     .git/refs
@@ -29,12 +31,12 @@ When we go looking at how this information is stored, our first guess might be t
 
 We see two directories, together containing three files with familier names: `docs`, `master` and `0.0.1`. Let's ignore the `tags` directory for now, and focus on `.git/refs/heads`. Git uses this directory to store all the information it needs on all the branches that exist in the project. It keeps a file for every banch, in this case just `docs` and `master` --- although in real-world projects this directory will probably contain many more files.
 
-While Git objects are stored with file types, sizes, hashes and deflation, these files are simply stored as plain text. Let's peek at their contents:
+Unlike Git objects, which are stored with file types, sizes, hashes and deflation, these branch files are simply stored as plain text. Let's peek at their contents:
 
     ~/waterbug $ cat .git/refs/heads/docs
     0985000564743153b0167c56c371036629952162
 
-That's it. The `docs` file contains just the hash of the latest commit on the `docs` branch. It makes sense when you think of it: branching into different directions is a very simple consequence of the linked-list model of commits that Git uses. Have two commits refer to the same commit as their parent, and you've got branches. All Git needs to record on top of that, is a name of a branch (the name of a file in `.git/refs/heads`) and the current _tip_ (latest commit) of that branch (the contents of that file in `.git/refs/heads`).
+That's it. The `docs` file contains just the hash of the latest commit on the `docs` branch. It makes sense when you think of it: branching into different directions is a very simple consequence of the linked-list model of commits that Git uses. Have two commits refer to the same commit as their parent, and you've got branches. All Git needs to record on top of that, is a branch name (the name of a file in `.git/refs/heads`) and the current _tip_ (latest commit) of that branch (the contents of that file in `.git/refs/heads`).
 
 With this knowledge, it is time we cleared up our nomenclature a bit:
 
@@ -46,6 +48,8 @@ Ref
 
 Tip
 :   A branch _tip_ is the latest commit in a branch.
+
+## Of banches and references
 
 It is important to make a distinction between a _branch_ as a chain of commits, and a _ref_ naming a partical chain of commits as a branch. Take the `git branch` command: you can use it to list, create or remove branches. But actually, you use it to list, create and remove _references to branches_. Let's illustrate with an example:
 
@@ -64,7 +68,7 @@ Using the programs `find` and `wc` we count the total number of files in the `.g
     ~/waterbug $ ls .git/refs/heads
     docs  master
 
-Using `git branch rm` to delete a branch has simply deleted the _reference_, not the actual _branch_ (the commits that that branch contained). That is why branching in Git is so fast and simple: branches are just named commit pointers and nothing more.
+Using `git branch rm` to delete a branch has simply deleted the _reference_, not the actual _branch_ (the chain of commits that that branch contained). That is why branching in Git is so fast and simple: branches are just named commit pointers and nothing more.
 
 ## The abandoned commit
 
@@ -76,7 +80,7 @@ You now might wonder what would happen if we removed the `docs` branch. Since br
     error: The branch 'docs' is not fully merged.
     If you are sure you want to delete it, run 'git branch -D docs'.
 
-Git helpfully informs us that the branch we were about to delete contains commits that are not yet part of any other branch -- that is to say, if you follow the ancestry of any other branch, in this case only `master`, all they way back to the project's first commit, you would not encounter some of the commits that are in `docs`. So, it appears we will actually lose commits when we remove an unmerged branch. But, as we like a challenge, we will force Git to delete the branch anyway, to see what happens:
+Git helpfully informs us that the branch we were about to delete contains commits that are not yet part of any other branch --- that is to say, if you follow the ancestry of any other branch, in this case only `master`, all they way back to the project's first commit, you would not encounter some of the commits that are in `docs`. So, it appears we will actually lose commits when we remove an unmerged branch. But, as we like a challenge, we will force Git to delete the branch anyway, to see what happens:
 
     ~/waterbug $ git branch -D docs
     Deleted branch docs (was 0985000).
@@ -100,9 +104,9 @@ Clearly, the commits from our deleted branch no longer show up in the log output
 
     HEAD is now at 0985000... Added README
 
-Despite the scary message Git prints out, we are actually back on the commit that used to be the tip of the the `docs` branch. So deleting the branch has indeed not deleted any of its contents -- just the reference has been removed.
+Despite the scary message Git prints out, we are actually back on the commit that used to be the tip of the the `docs` branch. So deleting the branch has indeed not deleted any of its contents --- just the reference has been removed.
 
-This is where things get tricky, because this might give you a false sense of security. The `0985000` commit is now considered by Git to be 'abandoned', as it is no longer included in any branch. Git will occasionally clean up and optimize its object database, and abandoned commits _will be removed_, or _pruned_ it Git parlance. This is a good thing, so just don't depend on these abandoned commits staying around. For now, however, it is nice to know that the objects we thought we removed are actually still around.
+This is where things get tricky, because this might give you a false sense of security. The `0985000` commit is now considered by Git to be 'abandoned', as it is no longer included in any branch. Git will occasionally clean up and optimize its object database, and abandoned commits **will be removed**, or _pruned_ it Git parlance. This is a good thing, so just don't depend on these abandoned commits staying around. For now, however, it is nice to know that the objects we thought we removed are actually still around.
 
 The message Git printed explained to us how we might create a new branch at the current commit, so let's do that to restore our `docs` branch:
 
@@ -113,7 +117,7 @@ We could have achieved the same result by skipping the `git checkout 0985000` st
 
     ~/waterbug $ git branch docs 0985000
 
-This would have kept the `master` branch checkout out, but created the `docs` branch at the specified commit.
+This would have kept the `master` branch checked out, but created the `docs` branch at the specified commit.
 
 In this case, it was obvious what commit to create our new branch at. If for some reason you missed that information, you could always use the _reflog_ to look it up using `git reflog`. The reflog is a log of all operations on your local repository, and it would have included an entry listing the hash and message of the `0985000` commit. We will return to the reflog in more detail in a later chapter.
 
@@ -124,7 +128,7 @@ There is one last piece of the branching puzzle missing: how does Git know what 
     ~/waterbug $ cat .git/HEAD
     ref: refs/heads/docs
 
-The `.git/HEAD` file is used by Git to track the currently checked out branch -- although, as we have seen in our previous example with the "detached HEAD state" this is not necessarily always a branch. Because `HEAD` currently points at the `docs` branch, any new commit we would now create, would record the tip of `docs` as its parent commit. Or, in simper terms, any commit right now would be made on the `docs` branch.
+The `.git/HEAD` file is used by Git to track the currently checked out branch -- although, as we have seen in our previous example with the "detached HEAD state" this is not necessarily always a branch. Because `HEAD` currently points at the `docs` branch, any new commit we would now create, would record the tip of `docs` as its parent commit. Or, in simpler terms, any commit made right now would be made on the `docs` branch.
 
 One might wonder why Git would not simply record a commit object in the `HEAD` file, as branches do. To explain why it doesn't, imagine the following scenario. You have the `master` branch currently checked out, and you want to start working on documentation. You create the new `docs` branch using `git branch docs` and you add the README file, as we have in the example. What would happen if you make a new commit? Had Git only recorded the current commit as `HEAD`, there would be no way for Git to know if the new commit was to advance the `master` branch or the `docs` branch, as they both point at the same commit object. Only by explicitly listing the current branch in `.git/HEAD`, is Git able to tell which branch to advance. Therefore, we can conclude that making a new commit does two things:
 
@@ -135,6 +139,13 @@ Schematically, we may draw Git's branching model as follows:
 
 ![Git branches point at specific commits in a chain of commits, while HEAD points at the current branch](images/git-branches.svg)
 
+## Merging branches
+
+Why merge
+Fast-forward merging
+Merge commits
+Merge conflicts
+
 ## Working with remote branches
 
 Part of the nature of a distributed version control system like Git is communicating with other repositories. Without delving too much into workflows concerning remote repositories, usually a team of developers will use some kind of central repository as _canonical_ repository, while each developer individually has a clone of that repository on his local machine for development. At some stage, developers will push new code from their local repositories to the remote, central repository; other developers will then pull those changes back into their local clones.
@@ -143,7 +154,9 @@ Users unfamiliar with Git often wonder how this can possibly work without genera
 
 First of all, Git is concerned with chains of commits, which tell Git how to manifest a collection of files and directories on disk. Different chains are named as branches. Every change _adds to_ the repository with new tree and commit objects, which are dependent on earlier tree and commit objects.
 
-When you add a remote repository in Git, you simply tell Git another location to look for branches. You can then use those branches like you would your local branches. Usually, you would set up mirroring branches
+When you add a remote repository in Git, you simply tell Git another location to look for branches. You can then use those branches like you would your local branches. You can inspect their contents, check out their commits and merge them into each other.
+
+Since with Git, commits simply refer to each other to form a chain, you can add new commits to the database at any time, without the need to lock anything. Remember, we can't change anything, we can only _add_ --- locking would make no sense. There will be no naming conflicts, since all objects are uniquely named based on their contents. Pulling new commits from another repository will add new commits to your local repository, until Git finds a commit that bot repositories have in common. Git handles the storage of information; the actual integration of remote and local branches is left to the developer.
 
 In summary, we have made the following observations:
 
