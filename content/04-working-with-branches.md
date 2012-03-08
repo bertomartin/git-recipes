@@ -141,10 +141,74 @@ Schematically, we may draw Git's branching model as follows:
 
 ## Merging branches
 
-Why merge
-Fast-forward merging
-Merge commits
-Merge conflicts
+When you branch one line of development off of another, at some stage you will want reintegrate your changes into the original branch. This is called merging. Git does its best to make merging easier, but no matter the tool, merging is a complex topic. Luckily, the most common kind of merge you can make is also the simplest. We'll review that first, and then look at the more complex option.
+
+When you tell Git to merge two branches together, Git will first try to do a _fast-forward merge_. This is the simplest form of merge and entails nothing more than moving one branch pointer forward to match up with another. That may sound cryptic, so let's review an example. Let's say we go back to the point where our application had two commits. Its history looked like this:
+
+    * 8f27176 - (HEAD, master) Added URL to rubyonrails.org
+    * 09bca75 - (0.0.1) Initial commit
+
+Now, we start writing some documentation. We create and check out a new branch with `git checkout -b docs`, write our README file and create a new commit. Our history now looks as follows:
+
+    * 0985000 - (HEAD, docs) Added README
+    * 8f27176 - (master) Added URL to rubyonrails.org
+    * 09bca75 - (0.0.1) Initial commit
+
+Not how we have a linear history from our `0985000` commit to our `09bca75` commit. There are no commits in the `master` branch that are not already in the `docs` branch. There _are_ commits (that is, a single commit) in our `docs` branch that are not in the `master` branch. To merge these commits --- that is, to ensure everything from `docs` is also in `master` --- Git just has to move the `master` ref forward to point at the same commit as the `docs` ref does:
+
+    * 0985000 - (HEAD, master, docs) Added README
+    * 8f27176 - Added URL to rubyonrails.org
+    * 09bca75 - (0.0.1) Initial commit
+
+Obviously, this would not have worked had `master` contained even a single commit that was not already in `docs`. To bring the two separate development lines together, Git will have to create a new commit object for us that combines the two. Let's assume we had created the `docs` branch from the first commit, not from the second:
+
+    * 0985000 - (HEAD, docs) Added README
+    | * 8f27176 - (master) Added URL to rubyonrails.org
+    |/  
+    * 09bca75 - (0.0.1) Initial commit
+
+A fast-forward merge is no longer possible, since there is no direct line available to Git from the tip of `master` to the tip of `docs`. Let's merge the `docs` branch into `master`:
+
+    $ git checkout master
+    $ git merge docs
+    Merge made by the 'recursive' strategy.
+     README |    1 +
+     1 file changed, 1 insertion(+)
+     create mode 100644 README
+
+Git tells us what the merge has done, and we have ended up with the following history:
+
+    *   421002c - (HEAD, master) - Merge branch 'docs'
+    |\
+    * | 0985000 - (docs) Added README
+    | * 8f27176 - Added URL to rubyonrails.org
+    |/  
+    * 09bca75 - (0.0.1) Initial commit
+
+Let's review what happened:
+
+1. Git created a new commit object for us, and set its own commit message described the merge.
+2. The `master` ref was advanced, since we merged `docs` _into_ `master`. The `docs` ref was left untouched.
+3. The merge commit apparently has _two parents_.
+
+We can see how Git stores the commit object using:
+
+    $ git cat-file -p 421002c
+    tree 1b9826793d310aa51111e53f1cd47192754951d3
+    parent 8f271769adcf159ff31ac590fd695d73b094f00c
+    parent 0985000564743153b0167c56c371036629952162
+    author Arjan van der Gaag <arjan@kabisa.nl> 1331235538 +0100
+    committer Arjan van der Gaag <arjan@kabisa.nl> 1331235538 +0100
+
+    Merge branch 'docs'
+
+There is the proof that a single commit might have any number of parent commits. A merge commit combining two branches will have two parent commits.
+
+The bane of every developer working with source control systems is merge conflicts. Note how merge conflicts cannot occur with fast-forward merges, as they only involve moving a ref. But with other strategies, there is a change that a single piece of content has changed in both branches. Although Git can make sense of a single file being changed in two different places, it will simply have to leave two changes to a single line to the developer to resolve.
+
+How does this work? 
+
+TODO
 
 ## Working with remote branches
 
