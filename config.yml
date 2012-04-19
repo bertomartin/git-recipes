@@ -1,9 +1,12 @@
-filename:    untitled
+---
 version:     0.0.1
-title:       Untitled
-creator:     Anonymous
+title:       Advanced Git Recipes
+creator:     Arjan van der Gaag
 language:    en
 publisher:   Untitled publisher
 subject:     No subject
 description: No description
 rights:      Creative Commons BY-SA 3.0 License.
+toc:         true
+ignore:
+  - README.md
