@@ -25,8 +25,7 @@ All contributions -- be it fixes or entire recipes -- are very welcome. Follow t
 
 * Ruby 1.9+ (1.9.3 recommended)
 * RubyGems 1.8+
-* Rake
-* Kramdown
+* Rpub gem
 * Git 1.7+
 
 ### Get the project
@@ -35,66 +34,11 @@ Clone the project Git repository from Github:
 
     $ git clone [URL]
 
-## Usage
+### Generate the book
 
-This project consists of two main parts:
+Use the [rpub][] gem to compile the input files to an .epub book:
 
-1. A set of content files in the `content` directory
-2. A collection of Rake tasks and scripts to convert these files into an epub book
-
-### Writing content
-
-Content is written in [Markdown][] format in files in the `content` directory with file extension `md`. Every file will be assumed a chapter in the book, and every chapter title is taken from the first heading in the chapter. Every filename should start with its chapter number, e.g. `01-introduction.md`.
-
-### Styling and layout
-
-The look of the book is determined by the `layout.xhtml` and `syles.css` files. These should contain strict XHTML and CSS 2.1 code.
-
-### Configuring book metadata
-
-The `config.yml` file specifies all the book settings and metadata, such as title, author and copyright.
-
-### Generating the book
-
-Once you have written some chapters, you can generate the epub file from the command line:
-
-    $ rake compile
-
-Or, for the same result, as `compile` will be default:
-
-    $ rake
-
-This will generate a file in your project root directory based on the `filename` and `version` keys in `config.yml`, such as "my-awesome-book-0.0.1.epub".
-
-### Code highlighting
-
-The Kramdown library gives us code highlighting for free, as long as we specify a `lang` attribute on a code block like so:
-
-    Here is a code sample:
-
-        def hello
-          "Hello, world"
-        end
-    {:lang="ruby"}
-
-    Doesn't it look great?
-
-Under the hood, Kramdown uses [Coderay][], so refer to its documentation for a list of supported languages.
-
-## Wishlist
-
-* Add proper support for images, including compression
-* Add proper support for guides, indicating cover page, toc, etc.
-* Add support for Kramdown features such as footnotes and abbreviations
-
-## Task reference
-
-* `rake preview.html`: generate a `preview.html` file that contains all content from the `content` directory. You can open it in a browser to get a preview of the book's contents in a single page.
-* `rake clean`: remove al temporary files, such as the generated files in the `book` directory and preview files.
-* `rake clobber`: remove all generated files, including any .epub files.
-* `rake compile`: compile all contents into an .epub file, but only when the file does not yet exist or is outdated.
-* `rake recompile`: force re-compilation of the .epub file, even when the file exists and is not outdated.
-* `rake test`: use the `epubcheck` program to test if .epub file has any errors.
+    $ rpub compile
 
 ## Credits
 
@@ -110,3 +54,4 @@ All content in the book is copyright 2011 Arjan van der Gaag and/or noted contri
 [Markdown]: http://daringfireball.org/projects/markdown
 [Coderay]: http://coderay.rubychan.de/ 
 [cc]: http://creativecommons.org/licenses/by-nc-sa/3.0/nl/
+[rpub]: https://avdgaag.github.com/rpub
