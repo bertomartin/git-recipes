@@ -54,4 +54,4 @@ All content in the book is copyright 2011 Arjan van der Gaag and/or noted contri
 [Markdown]: http://daringfireball.org/projects/markdown
 [Coderay]: http://coderay.rubychan.de/ 
 [cc]: http://creativecommons.org/licenses/by-nc-sa/3.0/nl/
-[rpub]: https://avdgaag.github.com/rpub
+[rpub]: http://avdgaag.github.com/rpub
