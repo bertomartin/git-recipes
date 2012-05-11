@@ -8,5 +8,7 @@ subject:     No subject
 description: No description
 rights:      Creative Commons BY-SA 3.0 License.
 toc:         true
+cover_image: cover.png
 ignore:
   - README.md
+  - outline.md
