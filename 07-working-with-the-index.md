@@ -48,8 +48,8 @@ also be staged, while the plain old `git add` only stages changes to files.
 
 ### Discussion
 
-The difference between a normal `git add <filepattern>` and `git add -u
-<filepattern>` is how Git matches `filepattern`. This is a basic glob pattern
+The difference between a normal `git add <filepattern>` and `git add 
+-u <filepattern>` is how Git matches `filepattern`. This is a basic glob pattern
 that defaults to `.` or the current directory and everything below it. Every
 file matched by this pattern will be staged.
 
@@ -75,8 +75,8 @@ to the repository. This was a mistake and you wish to unstage it.
 
 ### Solution
 
-Git tells you the solution when you run `git status`: use `git reset HEAD
-<file>` to unstage it:
+Git tells you the solution when you run `git status`: use `git reset
+HEAD <file>` to unstage it:
 
     $ git reset HEAD README.md
 
