@@ -239,3 +239,124 @@ It is also good to know you can stop the entire process with `q`. The most
 interesting option is `e`, that allows you to manually edit a hunk. See the
 next recipe for a more in-depth explanation of this option.
 
+## Editing hunks to be staged or unstaged
+
+### Problem
+
+You want to stage only some changes in a file for the next commit. However, Git
+does not automatically create the correct hunks for you when using `git add
+--patch`. You want to manually edit exactly which lines will be staged, at
+which won't.
+
+### Solution
+
+Apart from accepting or rejecting entire hunks, Git's patch mode also offers you
+the option to _edit_ a hunk. Run `git add --patch <yourfile>` and cycle to the hunk
+you want to edit. Git prompts you for an action:
+
+    diff --git a/app.rb b/app.rb
+    index 4cbff34..a70cdca 100644
+    --- a/app.rb
+    +++ b/app.rb
+    @@ -1,6 +1,7 @@
+     require 'sinatra'
+     require 'store'
+     
+    -get '/:id' do
+    +get '/id/:id' do
+    +  # Redirect to URL
+       redirect Store.fetch(params[:id].to_i)
+     end
+    Stage this hunk [y,n,q,a,d,/,e,?]? 
+
+As you can see, the patch contains two changes directly next to each other. We
+can no longer use `s` to split up this hunk, as Git would not know where to
+split it.  We shall therefore use `e` to open this patch in our default editor
+and manually edit it.  Git pre-loads the following document for us:
+
+    # Manual hunk edit mode -- see bottom for a quick guide
+    @@ -1,6 +1,7 @@
+     require 'sinatra'
+     require 'store'
+       
+    -get '/:id' do
+    +get '/id/:id' do
+    +  # Redirect to URL
+       redirect Store.fetch(params[:id].to_i)
+     end
+    # ---
+    # To remove '-' lines, make them ' ' lines (context).
+    # To remove '+' lines, delete them.
+    # Lines starting with # will be removed.
+    #
+    # If the patch applies cleanly, the edited hunk will immediately be
+    # marked for staging. If it does not apply cleanly, you will be given
+    # an opportunity to edit again. If all lines of the hunk are removed,
+    # then the edit is aborted and the hunk is left unchanged.
+
+There are three important parts: the indication that we are in manual hunk edit mode,
+the diff we are editing, and a help section. We can now take several steps:
+
+If we want to abort the edit, we can simply remove every line and quit our
+editor while saving our editor. Git will bring us back to the patch process.
+
+If we want to record the change on the fourth line, we edit the document so
+that it looks like this:
+
+    # Manual hunk edit mode -- see bottom for a quick guide
+    @@ -1,6 +1,7 @@
+     require 'sinatra'
+     require 'store'
+       
+    -get '/:id' do
+    +get '/id/:id' do
+       redirect Store.fetch(params[:id].to_i)
+     end
+
+We have removed the line that read `+  # Redirect to URL`. Since this line is left
+out of the patch, the change will be not be staged.
+
+If we want to record the adding of the commit, we edit the document so that it
+looks like this:
+
+    # Manual hunk edit mode -- see bottom for a quick guide
+    @@ -1,6 +1,7 @@
+     require 'sinatra'
+     require 'store'
+       
+     get '/:id' do
+    +  # Redirect to URL
+       redirect Store.fetch(params[:id].to_i)
+     end
+
+Note how the patch now only has a `+` line for the new comment. We have removed
+the other `+` line, since that is a change we do not wish to stage, and we have
+removed the dash from the `-` line, since we do not want that line to be
+deleted.
+
+When the necessary changes have been made, we can save our changes and quit our
+editor. Git will apply the patch to the index and prompt your for the next step
+in the patch process.
+
+### Discussion
+
+Git stages and unstages changes by applying patches to the index. You can edit
+those patches if you want, allowing you to really hand-craft your commits.
+There are however a couple of things to keep in mind:
+
+* Note how every line in the example diffs start with either a `+`, `-` or a
+  space. Lines starting with a space are "unchanged". Not starting a line with
+  a space will result in a bad patch and failure for Git to apply the patch.  Take
+  care that you editor does not remove all trailing whitespace when editing Git
+  patches!
+* You could add and remove more lines in the patch than you did in your
+  working tree. This may theoretically work, but is not a good idea,
+  since you are adding content to the index and then the repository
+  that was never tested in any way.
+* Note the `@@ -1,6 +1,7 @@` line at the top of the diff. These contain the
+  input and output ranges in the file, expressed in line numbers. When your
+  diff contains changes on the edges of the context Git shows you -- which
+  would happen if the very first line in the file has changed -- you might have
+  to edit these ranges in order to get the patch to apply. This is, admittedly,
+  an edge case.
+
