@@ -214,11 +214,51 @@ First of all, Git is concerned with chains of commits, which tell Git how to man
 
 When you add a remote repository in Git, you simply tell Git another location to look for branches. You can then use those branches like you would your local branches. You can inspect their contents, check out their commits and merge them into each other.
 
-Since with Git, commits simply refer to each other to form a chain, you can add new commits to the database at any time, without the need to lock anything. Remember, we can't change anything, we can only _add_ --- locking would make no sense. There will be no naming conflicts, since all objects are uniquely named based on their contents. Pulling new commits from another repository will add new commits to your local repository, until Git finds a commit that bot repositories have in common. Git handles the storage of information; the actual integration of remote and local branches is left to the developer.
+Since with Git, commits simply refer to each other to form a chain, you can add new commits to the database at any time, without the need to lock anything. Remember, we can't change anything, we can only _add_ --- locking would make no sense. There will be no naming conflicts, since all objects are uniquely named based on their contents. When you run `git fetch origin`, you tell Git to copy any object from `origin` to your local repository, unless your local repository already has it (which Git knows by its content-unique hash). When you use `git push`, you copy objects back to the remote repository in much the same way. There is very little 'magic' going on here, and nothing but common sense is stopping you from fetching objects from a completely unrelated project into your own repository. Git handles the storage of information; the actual integration of remote and local branches is left to the developer.
 
-In summary, we have made the following observations:
+To be sure, Git has some extra checks and features to facilitate working with remote branches. But at its core, remote branches are identical to local branches. As proof, let's see how Git stores information on remote branches. We'll publish our project on Github first:
+
+    $ git remote add origin git@github.com:username/waterbug.git
+    $ git push -u origin master
+
+We have pushed our local master branch to the remote clone on Github's servers. Let's look our branches:
+
+    $ tree .git/refs
+    .git/refs
+    ├── heads
+    │   ├── docs
+    │   └── master
+    ├── remotes
+    │   └── origin
+    │       └── master
+    └── tags
+        └── 0.0.1
+
+    4 directories, 4 files
+
+Git knows about our remote branch by a single file containing a hash (in this case, `.git/refs/heads/master` is identical to `.git/refs/remotes/origin/master`). Remote branches are stored in a directory in a special `remotes` directory.
+
+## The `refspec`
+
+Now you have seen this directory layout, you might be able to make a little more sense of a _refspec_, which you probably have seen before. Take a look at the settings for our remote repository in the Git configuration file:
+
+    $ cat .git/config
+    [remote "origin"]
+        url = git@github.com:username/waterbug.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+
+The value for the `fetch` key, `+refs/heads/*:refs/remotes/origin/*`, is a refspec. You'll encounter this term frequently in the Git docs. It might look complex, but it is actually a rather simple mapping of local objects to remote refs. The format is as follows: `[+]<source>:<destination>`. In this case, it maps `refs/heads/*` in the remote repository to `refs/remotes/origin/*` in the local repository. In English, this means that any remote ref matching `refs/heads/*` (i.e. any branch in the remote repository) will be downloaded when you run `git fetch` and be used to fast-forward the local ref matching `refs/remotes/origin/*` (i.e. a local branch with the same name in `refs/remotes/origin`). The `+` is used to allow non-fast-forward updates; this means you want your local copies of the remote branches to always mirror what's in the remote repository, even if somebody has made destructive changes to it.
+
+You have used refspecs before when using `git fetch` (or `git pull`) and `git push`. For example, in `git push origin master`, `master` is a special shorthand refspec for `master:master`; in `git push origin :feature`, you delete the remote `feature` branch by pushing 'nothing' to it.
+
+Note that when using `git fetch`, the `<source>` part in the refspec is the remote repository and `<destination>` is your local repository; when using `git push` it is the other way around.
+
+## Summary
+
+In summary, we have made the following observations about branches:
 
 1. Branches are simple pointers at existing commits. In Git, every commits belongs to a branch.
 2. `HEAD` points at the current state of our working copy and usually points at a branch.
 3. `HEAD` might point directly at a commit, which is considered a `detached HEAD state`. Should you make a new commit, that commit will be recorded as its parent, but it will not belong to any branch.
-3. Commits that do not belong to any branch are considered abandoned and will sooner or later be pruned. Until they are, however, they can still be checked out, manipulated and even be made the tip of a new branch, _unabandoning_ them.
+4. Commits that do not belong to any branch are considered abandoned and will sooner or later be pruned. Until they are, however, they can still be checked out, manipulated and even be made the tip of a new branch, _unabandoning_ them.
+5. Remote branches work the same way as local branches and are stored locally in accordance with the refspec recorded in the Git configuration.
