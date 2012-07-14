@@ -187,7 +187,7 @@ contains changes to be comitted, and changes not to be comitted:
     #
 
 Now suppose we had `app.rb` staged completely, and we wanted to unstage part of
-it. We can use the same `--path` option for the `git-reset` program (see another recipe
+it. We can use the same `--patch` option for the `git-reset` program (see another recipe
 for more information about unstaging stages using `git-reset`):
 
     $ git add app.rb
@@ -298,7 +298,7 @@ There are three important parts: the indication that we are in manual hunk edit 
 the diff we are editing, and a help section. We can now take several steps:
 
 If we want to abort the edit, we can simply remove every line and quit our
-editor while saving our editor. Git will bring us back to the patch process.
+editor while saving our changes. Git will bring us back to the patch process.
 
 If we want to record the change on the fourth line, we edit the document so
 that it looks like this:

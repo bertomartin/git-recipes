@@ -81,5 +81,7 @@ The `git-log` program has many options to limit the range of commits to show, ba
 
 For a full list of options and format tokens, refer to the `git-log` manual using `man git-log`.
 
+There is a special `git-shortlog` program that is described as "Summarizes git log output in a format suitable for inclusion in release announcements", but it groups commits by author, which may or may not be what you want.
+
 If you find yourself using this awkwardly long comand regularly, make sure to define your own Git alias.
 

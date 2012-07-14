@@ -8,7 +8,7 @@ When working on a Mac, your Git repositories tend to get littered with `.DS_Stor
 
 ### Solution
 
-Git allows you to set a global `.gitignore` file. This files behaves exactly the same as a project-specific `.gitignore` file, but it is always used in every project. In this file you can define pattens for generci files you never want to include in version control:
+Git allows you to set a global `.gitignore` file. This files behaves exactly the same as a project-specific `.gitignore` file, but it is always used in every project. In this file you can define pattens for generic files you never want to include in version control:
 
     .DS_Store
     .svn
@@ -39,7 +39,7 @@ This will, however, not remove the file from your index. You could do a `git rm 
 
     $ git rm --cached tmp/development.log
 
-This will tell Git to record the removal, but keep the actual file around, so you don't have to re-create it.
+This will tell Git to record the removal, but keep the actual file around, so you don't have to re-create it. The `--cached` option might seem cryptically named, until you learn that Git's _index_ (staging area) used to be called the _cache_. You can read `git rm --cached file` as 'git, remove file from index'.
 
 ## Ignoring all files in a directory but one
 
