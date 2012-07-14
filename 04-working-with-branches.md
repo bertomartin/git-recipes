@@ -202,13 +202,7 @@ We can see how Git stores the commit object using:
 
     Merge branch 'docs'
 
-There is the proof that a single commit might have any number of parent commits. A merge commit combining two branches will have two parent commits.
-
-The bane of every developer working with source control systems is merge conflicts. Note how merge conflicts cannot occur with fast-forward merges, as they only involve moving a ref. But with other strategies, there is a change that a single piece of content has changed in both branches. Although Git can make sense of a single file being changed in two different places, it will simply have to leave two changes to a single line to the developer to resolve.
-
-How does this work? 
-
-TODO
+There is the proof that a single commit might have any number of parent commits. A merge commit combining two branches will have two parent commits -- but it might as well have three or twelve parents.
 
 ## Working with remote branches
 
