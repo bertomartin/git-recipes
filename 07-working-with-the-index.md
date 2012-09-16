@@ -94,12 +94,12 @@ for more information on using the `git-reset` program.
 
 ## Staging or unstaging parts of a file
 
-## Problem
+### Problem
 
 You have made several unrelated changes in a single file. You wish to stage
 some for your next commit, but leave some others out.
 
-## Solution
+### Solution
 
 Git allows you to edit the patches that get applied to the index. This allows
 you to determine exactly what lines do get staged, and what lines don't. If
@@ -359,4 +359,197 @@ There are however a couple of things to keep in mind:
   would happen if the very first line in the file has changed -- you might have
   to edit these ranges in order to get the patch to apply. This is, admittedly,
   an edge case.
+
+## Continue work on your last commit
+
+### Problem
+
+You have committed changes to your local repository, but you just realised your
+work was not yet complete. You could use the `--amend` option of `git-commit`
+to add new changes to your last commit, but you would like a little more
+control over the changes in the final commit.
+
+### Solution
+
+Using `git-reset` you can undo your last commit, and optionally leave the
+changes in the index and your working tree. You have probably used `git reset
+--hard` before to completely undo a commit and restore your working tree to the
+state it was in one or more commits back in time. But you could also leave your
+cumulative changes staged, ready to be committed again, using `git reset
+--soft` or only leave them in your working tree so you can stage them again
+using `git reset --mixed` (`--mixed` is the default option).
+
+Take a look at the following example:
+
+    $ echo "Hello, world" > README
+    # On branch master
+    # Changes not staged for commit:
+    #   (use "git add <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    # modified:   README
+    #
+    $ git add README
+    $ git status
+    # On branch master
+    # Changes to be committed:
+    #   (use "git reset HEAD <file>..." to unstage)
+    #
+    # modified:   README
+    #
+    $ git commit -m "Example commit"
+
+We have changed a file and committed that change to the repository. If we want
+to continue working on this commit, we could pretend as if we had never staged
+or committed this change at all:
+
+    $ git reset HEAD^
+    $ git status
+    # Changes not staged for commit:
+    #   (use "git add <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    # modified:   README
+    #
+
+We are now back in the state before we added the changes to `README` to the
+index. This is great if you have a lot of changes, and you want to create a new
+commit containing only a few of them. On the other hand, if you have a lot
+changes and you want to omit only a few of them, you could use the `--soft`
+option to leave the index intact:
+
+    $ git reset --soft HEAD^
+    $ git status
+    # On branch master
+    # Changes to be committed:
+    #   (use "git reset HEAD <file>..." to unstage)
+    #
+    # modified:   README
+    #
+
+The change seems trivial with a small set of changes in a single commit, but
+you could just as easily reset to ten or more commits back. This would
+accumulate all changes introduced in those commits as changes in your working
+tree and index.
+
+### Discussion
+
+The `git-reset` program can be used to manipulate the index and working tree of
+your repository. Its options `--soft`, `--mixed` and `--hard` are hardly
+intention revealing, but once you have tried them all, you will quickly grasp
+what they do.
+
+Consider the usage:
+
+    $ git reset --[soft|mixed|hard] <target>
+
+`<target>` is a commit or reference, like `HEAD^2` or `c7eb45`, defaulting to
+`HEAD`.
+
+* `--soft` only moves `HEAD` to the target;
+* `--mixed` does the same as `--soft`, but also updates the index to reflect
+  the target;
+* `--hard` does the same as `--mixed`, but also updates the working tree to
+  reflect the target.
+
+It should no longer be a mystery why Git advises you to unstage a file using
+`git reset HEAD <path>`. Considering that `--mixed` is `git-reset`'s default
+operation mode, what it essentially tells you to do is:
+
+    $ git reset --mixed HEAD <path>
+
+As per the description above, Git will make the index look like the contents of
+HEAD (or: the latest commit) -- essentially as if nothing had been staged since
+the last commit. Since it is operating on a single file, the usual action
+associated with `--soft` makes no sense, so no references are updated and no
+commits are abandoned. And since `--hard` is not in effect, the working tree is
+left alone. So, your changes are kept on disk, but they will be removed from
+the index: they are unstaged.
+
+Note how using `git-reset` can function as an alternative to `git-stash`: you
+can quickly commit some stuff, move elsewhere, do some work, and then return to
+your temporary commit, reset it and continue working. The main difference is,
+of course, that your stash is purely local, while a temporary commit isn't --
+it is just a commit in the repository, ready to be shared with colleagues. 
+
+## Creating a branch from stashed changes
+
+### Problem
+
+You were working on a new feature, when you had to stash your changes and
+quickly fix a bug. You now want to continue working on your feature using your
+stashed changes, but enough has changed with your bug fix that applying your
+stash now causes merge conflicts. You want to continue working from the point
+where you saved the stash.
+
+### Solution
+
+The `git-stash` program comes with the `branch` subcommand that lets you create
+a new branch and apply the stash on that branch in one go. What's neat is that
+the branch will be created from the commit that the stash was saved from, so
+you know the stash will apply cleanly:
+
+    $ echo "Hello, world" >> README
+    $ git stash
+    Saved working directory and index state WIP on master: 421002c Initial commit
+    HEAD is now at 421002c Initial commit
+    # make some commits here
+    $ git stash brach improve-readme
+
+This will create a new branch called `improve-readme` starting from `421002c`,
+check that out, apply the latest stash and drop it.
+
+## Summarising working tree changes
+
+### Problem
+
+In your daily workflow, the regular output from `git-status` might get too verbose for your taste. You want something shorter.
+
+### Solution
+
+The `git-status` program comes with the handy `--short` (or `-s`) option to
+display only the bare minimum of information. Compare:
+
+    $ git status
+    # On branch master
+    # Changes to be committed:
+    #   (use "git reset HEAD <file>..." to unstage)
+    #
+    #	modified:   README
+    #
+    # Changes not staged for commit:
+    #   (use "git add <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    #	modified:   LICENSE
+    #
+    # Untracked files:
+    #   (use "git add <file>..." to include in what will be committed)
+    #
+    #	.DS_Store
+
+With:
+
+    $ git status -s
+    M  02-a-quick-introduction-to-git.md
+     M 07-working-with-the-index.md
+    ?? assets/outline.md
+    ?? styles.css
+
+Git uses a single line per file and uses the first two columns of each line to
+indicate its status: the first to indicate status in the index, the second in
+the working tree.
+
+One thing you might miss from this output is the information on the current branch. You can bring that back using the `--branch` (or `-b`) option, so your short status output will still display the branch name and tracking information:
+
+    $ git status -sb
+    ## master
+    M  02-a-quick-introduction-to-git.md
+     M 07-working-with-the-index.md
+    ?? assets/outline.md
+    ?? styles.css
+
+You might even consider setting up a shell alias:
+
+    alias gs='git status -sb'
 

@@ -92,4 +92,126 @@ The `master:README.md` notation looks simple enough, but you can actually pass m
 
 For more information, see the documentation on specifying Git revisions: `man gitrevisions`.
 
+## Removing a file from the repository entirely 
+
+### Problem
+
+You have accidentally committed a file with sensitive information, such as API
+keys or passwords, to the repository. This file needs to be removed and in no
+way be recoverable in the repository.
+
+### Solution
+
+Github offers a simple solution on its website to achieve the desired effect:
+
+    $ git filter-branch --index-filter\
+    'git rm --cached --ignore-unmatch passwords.yml' \
+    --prune-empty --tag-name-filter cat -- --all
+
+### Discussion
+
+How does this work? `git-filter-branch` is a low-level Git tool that allows you
+to rewrite the entire Git history using one or more filters. This example uses
+the `--index-filter` option, which allows you to rewrite the the index for
+every commit. The operation used to filter each commit index is the `git-rm`
+command to remove the offending file.
+
+The `--pruny-empty` ensures empty commits will be removed. An commit would be
+empty, if it only touched the `passwords.yml` file. Since that file will be
+removed, any commits affecting only that file become meaningless and can safely
+be removed.
+
+Finally, the `--all` option indicates to rewrite every branch and tag, while
+`--tag-name-filter cat` recreates every tag with the same name (the argument to
+`--tag-name-filter` should take a tag name as input and output a new tag name).
+
+Beware when using operations like this. Re-read the first paragraph: this
+command rewrites the entire Git history. That means that as far as Git is
+concerned, you end up with an entirely new repository, completely unrelated to
+one you started with. Every object in the object database is touched and
+changed. Keep that in mind when working in a team. Your rewritten repository
+and your team mate's repository will no longer share any commits, meaning you
+will no longer be able to push and pull from each other repositories.
+Sometimes, operations like this are necessary, but make sure to plan and
+coordinate a team-wide switch to the rewritten repo.
+
+## Untracking a file without removing it
+
+### Problem
+
+You have accidentally committed a large log file to your repository. You do not
+want to track this file with Git, but it contains relevant information you do
+want to keep around.
+
+### Solution
+
+Git allows you to remove a file without actually deleting it from disk:
+
+    $ git rm --cached log/development.log
+
+Note that the Git index used to be called the "cache", hence the `cached`
+option. This will record the removal of the file in the index, but leave the
+file itself alone.
+
+## Searching files across the repository
+
+### Problem
+
+You want to search your entire project for a string or regular expression.
+
+### Solution
+
+You could use tools like `grep` or `ack` to search across all the files on
+disk. `ack` is even smart enough to not search inside the meaningless `.git`
+directory. But Git also offers us `git-grep`, which can be used to search in
+files Git knows about. This automatically skips any irrelevant files.
+
+Use it as you would regular `grep`:
+
+    $ git grep foo
+
+### Discussion
+
+Using `git-grep` instead of other tools has a couple of advantages:
+
+1. You can search only files Git knows about and ignore any untracked or
+   ignored files.
+2. You can search in files in the index using `git grep --cached`, which others
+   cannot.
+3. You can search in the current working tree, or in any other treeish object.
+   For example, to search files that exist in the second-to-last commit on the
+   branch "feature-branch", use `git grep feature-branch^2 foo`.
+
+## Removing untracked files from the working tree
+
+### Problem
+
+Your working tree contains a lot of untracked files you do not need to keep around nor want to track with Git. For example, running a Ruby project with Rubinius will leave your project littered with a `.rbc` file for every `.rb` file.
+
+### Solution
+
+Rather than removing each file by hand or shell scripting your way out of this, you can use the `git-clean` program to remove files Git does not track:
+
+    $ git status -s
+    ?? lib/waterbug/version.rbc
+    $ git clean
+    Removing lib/waterbug/version.rbc
+
+### Discussion
+
+`git-clean` comes with a few interesting options:
+
+* you can specify wether it should only remove files Git knows nothing about,
+  or also remove files that Git ignores (based on the `.gitignore` file) using
+  `-x`. To _only_ remove file Git ignores, use `-X`.
+* You can test what Git is going to remove using `--dry-run` (or `-n`). Git
+  will give you more or less the same output, but not actually remove anything.
+  You can make this behaviour the default behaviour using `git config
+  clean.requireForce true`. To _force_ a clean, use `--force` (or `-f`).
+* Git will, by default, not remove directories. Instruct it to do so using
+  `-d`.
+* You can limit where files will be removed by supplying a path as an extra
+  option. Normally, `git-clean` will operate on the current directory and any
+  below it, but you can only affect the `lib` directory using `git clean lib`.
+
 [Kramdown]: http://kramdown.rubyforge.org/

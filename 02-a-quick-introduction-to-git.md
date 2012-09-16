@@ -154,4 +154,5 @@ All changes are re-applied to your current working tree and you can continue whe
 
 This concludes a very brief overview of the most common Git operations and programs. For more information, refer to the following excellent resources:
 
-...
+* The Git website ([http://git-scm.com](http://git-scm.com))
+* Pro Git by Scott Chacon ([http://git-scm.com/book](http://git-scm.com/book))
