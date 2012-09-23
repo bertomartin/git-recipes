@@ -44,12 +44,13 @@
     - Find out who made a change in a file
     - Find out who removed a line
     - Searching commit messages
-    * Find out changes that are in one branch but not another
+    - Listing the history of a file
     * Listing project committers
-    * Seeing all branches in a graph
-    * Find out which branches a commit is in
     * Reviewing recent actions on your local repository
 * Dealing with branches
+    * Find out changes that are in one branch but not another
+    * Seeing all branches in a graph
+    * Find out which branches a commit is in
     * Moving a single commit from one branch to another
     * Moving a range of commits from one branch to another
     * Undo a merge

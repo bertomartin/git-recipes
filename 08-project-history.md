@@ -10,7 +10,10 @@ commit.
 
 ### Solution
 
-The `git-blame` program can annotate every line in a file with information on when that line was last touched. This tells you the commit hash, author and date. For brevity's sake, this example uses `-s` to omit commit author and date:
+The `git-blame` program can annotate every line in a file with information on
+when that line was last touched. This tells you the commit hash, author and
+date. For brevity's sake, this example uses `-s` to omit commit author and
+date:
 
     $ git blame -s app.rb
     ^09bca75  1) require 'sinatra'
@@ -128,7 +131,11 @@ show you the lines in the entire output matching your query, as piping it into
 
 ### Discussion
 
-The query used with `--grep` is a basic regular expression. You could choose to either match it as a simple string using `-F`, an extended regular expression using `-E` and have it ignore case using `-i`. Furthermore, you can specify multiple search queries by adding `--grep` multiple times. Git will match any commits matching either of the queries:
+The query used with `--grep` is a basic regular expression. You could choose to
+either match it as a simple string using `-F`, an extended regular expression
+using `-E` and have it ignore case using `-i`. Furthermore, you can specify
+multiple search queries by adding `--grep` multiple times. Git will match any
+commits matching either of the queries:
 
     $ git log --grep Remove --grep help
     commit 39dc77d4791c520b856b5c52a29ff18bd509f718
@@ -145,3 +152,75 @@ The query used with `--grep` is a basic regular expression. You could choose to 
 
 To change the default "or" behaviour, use `--all-match` to have Git show only
 commits matching _all_ the queries.
+
+## Listing the history of a single file
+
+### Problem
+
+You want to see what has happened to a specific file in your repository over
+time.
+
+### Solution
+
+You can list the history of a specific file in the repository by supplying a
+path to the `git-log` program:
+
+    $ git log README.md
+    commit f9a5cffb4222f86fbc16230fd61687f292928ef7
+    Author: Arjan van der Gaag <arjan@kabisa.nl>
+    Date:   Sun Sep 23 20:41:07 2012 +0200
+
+        Apply markdown to README file
+
+In this particular case, we happen to know the commit shown actually renamed
+the `README` file to `README.md`. Even though our current working tree does not
+contain a file called `README`, we can still ask Git what it knows about such a
+file:
+
+    $ git log -- README
+    commit f9a5cffb4222f86fbc16230fd61687f292928ef7
+    Author: Arjan van der Gaag <arjan@kabisa.nl>
+    Date:   Sun Sep 23 20:41:07 2012 +0200
+
+        Apply markdown to README file
+
+    commit 0985000564743153b0167c56c371036629952162
+    Author: Arjan van der Gaag <arjan@kabisa.nl>
+    Date:   Sun Dec 18 12:57:18 2011 +0100
+
+        Added README
+
+This includes the commit that created the `README` file, and the commit that
+deleted `README` and added `README.md`. Note the the extra `--` in the command.
+Since the file `README` does not exist on disk, Git tries to be smart and
+interpret it as a refspec. With the `--` we explicitly tell Git to interpret
+what follows as a path.
+
+Conceptually, we would expect the output from the second example in the first
+-- since it is "the same file". To that end, we can ask Git to follow our file
+across renames:
+
+    $ git log --follow README.md
+    commit f9a5cffb4222f86fbc16230fd61687f292928ef7
+    Author: Arjan van der Gaag <arjan@kabisa.nl>
+    Date:   Sun Sep 23 20:41:07 2012 +0200
+
+        Apply markdown to README file
+
+    commit 0985000564743153b0167c56c371036629952162
+    Author: Arjan van der Gaag <arjan@kabisa.nl>
+    Date:   Sun Dec 18 12:57:18 2011 +0100
+
+        Added README
+
+### Discussion
+
+To understand why Git does not, by default, behaves as when the `--follow`
+option was given, we need to look at how Git stores its data. Git stores data
+as blobs on disk in the `.git/objects` directory, and uses trees to associate
+blobs with files. Fundamentally, Git tracks _content_, not _files_.
+
+When asking for the history of a path, Git can simply look through the commits
+and see what commits affected a path. So, naturally, when you change a
+filename, it no longer matches the specified path. The `--follow` option, then,
+takes the extra effort to inspect commits and detect file renames.
