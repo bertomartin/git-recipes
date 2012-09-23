@@ -1,7 +1,7 @@
 * Introduction
     * Why another book on Git
     * Context of this book: experience from colleagues
-    * A typical Git workflow
+    - A typical Git workflow
 - Git object model
     - Example application: waterbug, a simple URL shortener
     - Peeking inside the Git object database
@@ -11,7 +11,7 @@
     - Of branches and references
     - The abandoned commit
     - Merging branches
-    * Dealing with merge conflicts
+    - Dealing with merge conflicts
     - Working with remote branches
 * Git workflow
     - Using colors in Git output
@@ -41,13 +41,13 @@
     - Summarizing working copy changes
     * Reviewing changes in your working tree
 * Browsing the project history
-    * Find out who made a change in a file
+    - Find out who made a change in a file
+    - Find out who removed a line
+    - Searching commit messages
+    * Find out changes that are in one branch but not another
     * Listing project committers
     * Seeing all branches in a graph
     * Find out which branches a commit is in
-    * Find out changes that are in one branch but not another
-    * Searching commit messages
-    * Searching commits with change
     * Reviewing recent actions on your local repository
 * Dealing with branches
     * Moving a single commit from one branch to another
@@ -66,11 +66,13 @@
     * Export a repository to a compressed archive
     * Push changes to a locale file instead of a remote repository
 * Rebasing
+    * Amending the last commit
+    * Changing commit messages
     * Rewriting history by squashing commits
     * Automatically squashing commits
     * Squashing entire feature branches
     * Reordering commits using interactive rebasing
-    * Changing commit messages
+    * Splitting a single commit into multiple commits
 * Using Git hooks
     * Using commit message templates
     * Notifying others of new commits
