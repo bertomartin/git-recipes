@@ -57,10 +57,12 @@
     * Undo a merge commit
     * Creating an explicit merge commit
     * Not creating needless merge commits
+    * Re-using recorded merge conflict resolutions
     * Setting up a branch to track a remote branch
     * using an external diff tool
 * Working with remote repositories and teams
     * Listing all remote repositories
+    * Using multiple remotes
     * Pushing a local branch to a remote repository
     * Deleting a branch from the remote repository
     * Pushing one local branch to another remote branch
