@@ -18,7 +18,7 @@
     - Using a GUI
     - Using external diff programs
     - Creating your own git aliases
-    * Editor integration (textmate, sublimetext, fugitive)
+    ? Editor integration (textmate, sublimetext, fugitive)
     - Generating a list of changes
     M Showing a shorter status list
     - Finding help for Git scenarios and commands
@@ -39,7 +39,7 @@
     - Continue working on the last commit
     - Create a new branch from stashed changes
     - Summarizing working copy changes
-    * Reviewing changes in your working tree
+    ? Reviewing changes in your working tree
 * Browsing the project history
     - Find out who made a change in a file
     - Find out who removed a line
@@ -53,14 +53,16 @@
     * Find out which branches a commit is in
     * Moving a single commit from one branch to another
     * Moving a range of commits from one branch to another
+    * Squashing entire feature branches
+* Merging and conflicts
     * Undo a merge
     * Undo a merge commit
     * Creating an explicit merge commit
     * Not creating needless merge commits
     * Re-using recorded merge conflict resolutions
-    * Setting up a branch to track a remote branch
     * using an external diff tool
 * Working with remote repositories and teams
+    * Setting up a branch to track a remote branch
     * Listing all remote repositories
     * Using multiple remotes
     * Pushing a local branch to a remote repository
@@ -68,14 +70,15 @@
     * Pushing one local branch to another remote branch
     * Export a repository to a compressed archive
     * Push changes to a locale file instead of a remote repository
+    * Using rebase instead of merge with pull
 * Rebasing
-    * Amending the last commit
-    * Changing commit messages
-    * Rewriting history by squashing commits
-    * Automatically squashing commits
-    * Squashing entire feature branches
-    * Reordering commits using interactive rebasing
-    * Splitting a single commit into multiple commits
+    * The dangers of rewriting history
+    - Amending the last commit
+    - Changing commit messages
+    - Reordering commits using interactive rebasing
+    - Rewriting history by squashing commits
+    - Splitting a single commit into multiple commits
+    - Automatically squashing commits
 * Using Git hooks
     * Using commit message templates
     * Notifying others of new commits
