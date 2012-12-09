@@ -45,7 +45,7 @@
     - Find out who removed a line
     - Searching commit messages
     - Listing the history of a file
-    * Listing project committers
+    - Listing project committers
     * Reviewing recent actions on your local repository
 * Dealing with branches
     * Find out changes that are in one branch but not another

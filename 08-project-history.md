@@ -224,3 +224,42 @@ When asking for the history of a path, Git can simply look through the commits
 and see what commits affected a path. So, naturally, when you change a
 filename, it no longer matches the specified path. The `--follow` option, then,
 takes the extra effort to inspect commits and detect file renames.
+
+## Find all committers in the project
+
+### Problem
+
+You want to list all the people who have made commits on this project, or
+just the people who have committed since the last release.
+
+### Solution
+
+The `git-shortlog` program is a helpful tool to summarize the output of
+`git-log`. It is focused on listing authors and their commits. You can use it
+to list all the commits in your local `master` branch that are not yet in
+`origin/master`, grouped by author:
+
+    $ git shortlog master ^origin/master
+    Arjan van der Gaag (1):
+          Apply markdown to README file
+
+Note how the output of `git-shortlog` is human-friendly enough to be included
+in release notes document.
+
+If you are only interested in the authors in the project, you can use the `-s`
+option to summarize the output from `git-shortlog`:
+
+    $ git shortlog -s -n
+        17  Arjan van der Gaag
+         3  John Jackson
+         1  Jack Johnson
+
+Note I have also included the `-n` option to order entries by number of
+commits, rather than alphabetically by name. Getting just the names of
+committers is easy now, with a little `awk` magic:
+
+    $ git shortlog -s | awk '{ print $2 }' | sort -u
+    Arjan van der Gaag
+    Jack Johnson
+    John Jackons
+
